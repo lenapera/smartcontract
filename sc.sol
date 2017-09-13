@@ -10,6 +10,7 @@ contract Raindatamonetizer {
     int longitude;
     int radius;
     uint funds;
+    uint datasegmentID;
     mapping (uint => Datasegment) datasegments;
     address owner;
     
@@ -33,6 +34,7 @@ contract Raindatamonetizer {
         owner = msg.sender;
         pricePerSegment = _pricePerSegment;
         amountOfSegments = _amountOfSegments;
+        remainingSegments = _amountOfSegments;
         latitude = _latitude;
         longitude = _longitude;
         radius = _radius;
@@ -47,9 +49,11 @@ contract Raindatamonetizer {
         _deadline = deadline;
     }
     
-    function insertDataSegment(int _latitude, int _longitude, uint _raindata, uint _timestamp) returns (uint datasegmentID) {
-        datasegmentID++; 
+    function insertDataSegment(int _latitude, int _longitude, uint _raindata, uint _timestamp) returns (uint _datasegmentID) {
         datasegments[datasegmentID] = Datasegment(msg.sender, msg.sender, _latitude, _longitude, _raindata, _timestamp);
+        datasegmentID++;
+        
+        return datasegmentID;
     }
     
     
@@ -62,13 +66,15 @@ contract Raindatamonetizer {
     }
     
     function escrow (uint datasegmentID) returns (bool success) {
-        if ((msg.sender == owner) && (funds > pricePerSegment)) {
-            datasegments[datasegmentID].owner = msg.sender;
-            datasegments[datasegmentID].provider.transfer(pricePerSegment);
-            funds = funds - pricePerSegment;
-            remainingSegments--;
-            
-            return true;
+        if (validateDataSegment(datasegmentID)) {
+            if ((msg.sender == owner) && (funds > pricePerSegment)) {
+                datasegments[datasegmentID].owner = msg.sender;
+                datasegments[datasegmentID].provider.transfer(pricePerSegment);
+                funds = funds - pricePerSegment;
+                remainingSegments--;
+                
+                return true;
+            }
         }
         
         return false;
@@ -83,7 +89,7 @@ contract Raindatamonetizer {
         if ((remainingSegments > 0) && (deadline > datasegments[datasegmentID].timestamp)) {
             if ((latitudeMin < datasegments[datasegmentID].latitude) && (datasegments[datasegmentID].latitude < latitudeMax)) {
                 if ((longitudeMin < datasegments[datasegmentID].longitude) && (datasegments[datasegmentID].longitude < longitudeMax)) {
-                    return escrow(datasegmentID);
+                    return true;
                 }
             }
         }
