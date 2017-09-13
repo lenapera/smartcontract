@@ -65,6 +65,8 @@ contract Raindatamonetizer {
         if ((msg.sender == owner) && (funds > pricePerSegment)) {
             datasegments[datasegmentID].owner = msg.sender;
             datasegments[datasegmentID].provider.transfer(pricePerSegment);
+			funds = funds - pricePerSegment;			
+			remainingSegments--;
             
             return true;
         }
