@@ -15,6 +15,7 @@ contract Raindatamonetizer {
     
     struct Datasegment {
         address provider;
+        address owner;
         int latitude;
         int longitude;
         uint raindata; 
@@ -48,7 +49,7 @@ contract Raindatamonetizer {
     
     function insertDataSegment(int _latitude, int _longitude, uint _raindata, uint _timestamp) returns (uint datasegmentID) {
         datasegmentID++; 
-        datasegments[datasegmentID] = Datasegment(msg.sender, _latitude, _longitude, _raindata, _timestamp);
+        datasegments[datasegmentID] = Datasegment(msg.sender, msg.sender, _latitude, _longitude, _raindata, _timestamp);
     }
     
     
@@ -60,8 +61,11 @@ contract Raindatamonetizer {
         timestamp = datasegments[datasegmentID].timestamp;
     }
     
-    function escrow () {
-        
+    function escrow (uint datasegmentID) {
+        if ((msg.sender == owner) && (funds > pricePerSegment)) {
+            datasegments[datasegmentID].owner = msg.sender;
+            datasegments[datasegmentID].provider.transfer(pricePerSegment);
+        }
     }
     
     function validateDataSegment(uint iD) returns (bool valid) {
