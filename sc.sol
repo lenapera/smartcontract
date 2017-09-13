@@ -61,11 +61,15 @@ contract Raindatamonetizer {
         timestamp = datasegments[datasegmentID].timestamp;
     }
     
-    function escrow (uint datasegmentID) {
+    function escrow (uint datasegmentID) returns (bool success) {
         if ((msg.sender == owner) && (funds > pricePerSegment)) {
             datasegments[datasegmentID].owner = msg.sender;
             datasegments[datasegmentID].provider.transfer(pricePerSegment);
+            
+            return true;
         }
+        
+        return false;
     }
     
     function validateDataSegment(uint iD) returns (bool valid) {
